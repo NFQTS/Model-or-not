@@ -3,188 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Screen</title>
+    <title>Model or Not? - Loading Entertainment</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            height: 100vh;
             overflow: hidden;
-            background: black;
-            color: white;
-            font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            position: relative;
         }
 
-        /* Space background with animated stars */
         canvas {
             position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1;
+            inset: 0;
+            z-index: 1;
         }
 
-        .loading-text {
+        .overlay {
+            position: relative;
+            z-index: 2;
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-            z-index: 1;
+            width: 100%;
+            max-width: 900px;
+            padding: 2rem;
         }
 
-        .buttons {
+        .title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed, #ff00aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            opacity: 0.85;
+            margin-bottom: 2.5rem;
+        }
+
+        .game-container {
             display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            z-index: 1;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            width: 90%;
+            max-width: 480px;
         }
 
-        .button {
-            background: linear-gradient(45deg, #00bfff, #1e90ff);
+        .image-frame {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.15);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: all 0.4s ease;
+        }
+
+        .image-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .image-frame:hover img {
+            transform: scale(1.04);
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 1.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn {
+            flex: 1;
+            max-width: 220px;
+            padding: 1.2rem 2rem;
+            font-size: 1.3rem;
+            font-weight: 600;
             border: none;
-            color: white;
-            padding: 15px 30px;
-            font-size: 18px;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 0 10px #00bfff;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
         }
 
-        .button:hover {
+        .btn-model {
+            background: linear-gradient(135deg, #00d4ff, #0095ff);
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-not {
+            background: linear-gradient(135deg, #ff3366, #cc0066);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 51, 102, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        .btn:active {
+            transform: translateY(-2px);
+        }
+
+        #result {
+            font-size: 1.5rem;
+            font-weight: 600;
+            min-height: 2.5rem;
+            margin: 1rem 0;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        #result.show {
+            opacity: 1;
+        }
+
+        .next-btn {
+            margin-top: 1rem;
+            padding: 0.9rem 2.5rem;
+            font-size: 1.1rem;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .next-btn:hover {
+            background: rgba(255,255,255,0.15);
             transform: scale(1.05);
-            box-shadow: 0 0 20px #00bfff;
-        }
-
-        .entertainment {
-            display: none;
-            width: 80%;
-            max-width: 600px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 1;
-        }
-
-        #game {
-            display: none;
-        }
-
-        #game img {
-            width: 300px;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-
-        .game-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
         }
     </style>
 </head>
 <body>
     <canvas id="stars"></canvas>
-    <div class="loading-text">
-        Finding opportunities… please enjoy the entertainment while you wait…
-    </div>
-    <div class="buttons">
-        <button class="button" onclick="showEntertainment('video')">Videos</button>
-        <button class="button" onclick="showEntertainment('music')">Music</button>
-        <button class="button" onclick="showEntertainment('game')">Model or Not?</button>
-    </div>
-    <div id="video" class="entertainment">
-        <h2>Videos</h2>
-        <p>Enjoy this sample video:</p>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
-    </div>
-    <div id="music" class="entertainment">
-        <h2>Music</h2>
-        <p>Listen to this sample track:</p>
-        <audio controls>
-            <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
-    </div>
-    <div id="game" class="entertainment">
-        <h2>Model or Not?</h2>
-        <p>Guess if this is a model or not!</p>
-        <img id="game-image" src="" alt="Guess the image">
-        <div class="game-buttons">
-            <button class="button" onclick="guess('model')">Model</button>
-            <button class="button" onclick="guess('not')">Not</button>
+
+    <div class="overlay">
+        <div class="title">Model or Not?</div>
+        <div class="subtitle">Finding opportunities… please enjoy the entertainment while you wait…</div>
+
+        <div class="game-container">
+            <div class="image-frame">
+                <img id="game-image" src="" alt="Guess this person">
+            </div>
+
+            <div class="choice-buttons">
+                <button class="btn btn-model" onclick="guess('model')">MODEL</button>
+                <button class="btn btn-not" onclick="guess('not')">NOT A MODEL</button>
+            </div>
+
+            <p id="result"></p>
+
+            <button class="next-btn" onclick="nextImage()">Next Image</button>
         </div>
-        <p id="result"></p>
-        <button class="button" onclick="nextImage()">Next</button>
     </div>
 
     <script>
-        // Animated stars background
+        // Starfield
         const canvas = document.getElementById('stars');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
         const stars = [];
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 300; i++) {
             stars.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                radius: Math.random() * 1.5,
-                speed: Math.random() * 0.5 + 0.1
+                radius: Math.random() * 1.6 + 0.3,
+                speed: Math.random() * 0.6 + 0.15
             });
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        function animateStars() {
+            requestAnimationFrame(animateStars);
+            ctx.fillStyle = 'rgba(0,0,0,0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             stars.forEach(star => {
                 ctx.beginPath();
                 ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-                ctx.fillStyle = 'white';
+                ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.5 + 0.5})`;
                 ctx.fill();
+
                 star.y += star.speed;
-                if (star.y > canvas.height) star.y = 0;
+                if (star.y > canvas.height) {
+                    star.y = 0;
+                    star.x = Math.random() * canvas.width;
+                }
             });
         }
-        animate();
+        animateStars();
 
-        // Entertainment sections
-        function showEntertainment(type) {
-            document.querySelectorAll('.entertainment').forEach(el => el.style.display = 'none');
-            const section = document.getElementById(type);
-            if (section) section.style.display = 'block';
-            if (type === 'game') nextImage();
-        }
-
-        // Mini game logic
+        // Game logic
         const images = [
-            { url: 'https://picsum.photos/300/300?random=1', isModel: true }, // Placeholder: assume true for model
-            { url: 'https://picsum.photos/300/300?random=2', isModel: false },
-            { url: 'https://picsum.photos/300/300?random=3', isModel: true },
-            { url: 'https://picsum.photos/300/300?random=4', isModel: false },
-            // Add more images with actual model/non-model pics if needed
+            { url: 'https://picsum.photos/seed/model1/480/640', isModel: true  },
+            { url: 'https://picsum.photos/seed/person2/480/640', isModel: false },
+            { url: 'https://picsum.photos/seed/model3/480/640', isModel: true  },
+            { url: 'https://picsum.photos/seed/normal4/480/640', isModel: false },
+            { url: 'https://picsum.photos/seed/model5/480/640', isModel: true  },
+            { url: 'https://picsum.photos/seed/casual6/480/640', isModel: false },
+            // You can replace these with real curated image URLs later
         ];
 
-        let currentImageIndex = 0;
+        let currentIndex = -1;
 
         function nextImage() {
-            currentImageIndex = Math.floor(Math.random() * images.length);
-            document.getElementById('game-image').src = images[currentImageIndex].url;
-            document.getElementById('result').textContent = '';
+            currentIndex = Math.floor(Math.random() * images.length);
+            const img = document.getElementById('game-image');
+            const result = document.getElementById('result');
+
+            img.src = images[currentIndex].url;
+            result.classList.remove('show');
+            result.textContent = '';
         }
 
         function guess(choice) {
-            const isModel = images[currentImageIndex].isModel;
+            if (currentIndex === -1) return;
+
+            const isModel = images[currentIndex].isModel;
             const correct = (choice === 'model' && isModel) || (choice === 'not' && !isModel);
-            document.getElementById('result').textContent = correct ? 'Correct!' : 'Wrong!';
+
+            const result = document.getElementById('result');
+            result.textContent = correct ? 'Correct! 🎉' : 'Nope! 😅';
+            result.style.color = correct ? '#00ff9d' : '#ff4d94';
+            result.classList.add('show');
         }
+
+        // Start with first image
+        nextImage();
     </script>
 </body>
 </html>
-```​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​​
